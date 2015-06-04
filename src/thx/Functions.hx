@@ -7,6 +7,8 @@ using haxe.macro.ExprTools;
 #end
 
 
+@:callable abstract AFunction<T>(T) from T to T {}
+
 
 /**
 Extension methods for functions with arity 0 (functions that do not take arguments).
@@ -232,16 +234,43 @@ The `identity` function returns the value of its argument.
 **/
   public static function noop() : Void {}
 
-
-  macro public static function fn(filter:Expr) {
+  #if macro
+  static function wrapToAFunction(fnx) {
+    var tp = haxe.macro.Context.typeof(fnx);
+    var complex = haxe.macro.Context.toComplexType(tp);
+    var cType = macro:thx.Functions.AFunction<$complex>;
+    return cType;
+  }
+  #end
+  macro public static function fn<T>(filter:Expr) {
     var new_filter = thx.macro.lambda.MacroHelper.replaceWildCard(filter);
     var occurrences = thx.macro.lambda.MacroHelper.countMaxWildcard(filter);
     return switch occurrences {
-      case 0:macro function(__tmp0) { return $new_filter;  };
-      case 1:macro function(__tmp0,__tmp1) { return $new_filter;  };
-      case 2:macro function(__tmp0,__tmp1,__tmp2) { return $new_filter;  };
-      case 3:macro function(__tmp0,__tmp1,__tmp2,__tmp3) { return $new_filter;  };
-      case 4:macro function(__tmp0,__tmp1,__tmp2,__tmp3,__tmp4) { return $new_filter;  };
+      case 0: {
+        var fnx = macro function(__tmp0) { return $new_filter;  };
+        var typeFunction = wrapToAFunction(fnx);
+        macro ($fnx : $typeFunction);
+      }
+      case 1:{
+        var fnx = macro function(__tmp0,__tmp1) { return $new_filter;  };
+        var typeFunction = wrapToAFunction(fnx);
+        macro ($fnx : $typeFunction);
+       }
+      case 2:{
+        var fnx = macro function(__tmp0,__tmp1,__tmp2) { return $new_filter;  };
+        var typeFunction = wrapToAFunction(fnx);
+        macro ($fnx : $typeFunction);
+      }
+      case 3:{
+        var fnx = macro function(__tmp0,__tmp1,__tmp2,__tmp3) { return $new_filter;  };
+        var typeFunction = wrapToAFunction(fnx);
+        macro ($fnx : $typeFunction);
+      }
+      case 4:{
+        var fnx = macro function(__tmp0,__tmp1,__tmp2,__tmp3,__tmp4) { return $new_filter;  };
+        var typeFunction = wrapToAFunction(fnx);
+        macro ($fnx : $typeFunction);
+      }
       default: macro null;
     };
   }
