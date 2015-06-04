@@ -6,9 +6,32 @@ import haxe.macro.ExprTools;
 using haxe.macro.ExprTools;
 #end
 
+using thx.Functions;
+using thx.Functions.Functions0;
+using thx.Functions.Functions1;
+using thx.Functions.Functions2;
+using thx.Functions.Functions3;
 
-@:callable abstract AFunction<T>(T) from T to T {}
 
+@:forawrd @:callable abstract AFunction<T>(T) from T to T {
+  public inline function new(fn:T) this = fn;
+
+  //@:op(A + B) public  inline function composeFunctions<TIn, TRet1, TRet2>(fn2:TIn -> TRet2):AFunction<T> {
+  //  return (fn2.compose(this):AFunction<T>);
+  //}
+
+}
+
+typedef Fn1<A,B> = A->B;
+
+@:forawrd @:callable abstract AFunction1<A,B>(Fn1<A,B>) from Fn1<A,B> to Fn1<A,B> {
+  public inline function new(fn:Fn1<A,B>) this = fn;
+
+  @:op(A + B) public  inline function composeFunctions<A,B>(fn2:Fn1<A,B>):AFunction<Fn1<A,B>> {
+    return (fn2.compose(this));
+  }
+
+}
 
 /**
 Extension methods for functions with arity 0 (functions that do not take arguments).
@@ -241,6 +264,15 @@ The `identity` function returns the value of its argument.
     var cType = macro:thx.Functions.AFunction<$complex>;
     return cType;
   }
+
+  static function wrapToAFunction1(fnx) {
+    var tp = haxe.macro.Context.typeof(fnx);
+    var complex = haxe.macro.Context.toComplexType(tp);
+    var cType = macro:thx.Functions.AFunction1<$complex>;
+    return cType;
+  }
+
+
   #end
   macro public static function fn<T>(filter:Expr) {
     var new_filter = thx.macro.lambda.MacroHelper.replaceWildCard(filter);
@@ -248,7 +280,7 @@ The `identity` function returns the value of its argument.
     return switch occurrences {
       case 0: {
         var fnx = macro function(__tmp0) { return $new_filter;  };
-        var typeFunction = wrapToAFunction(fnx);
+        var typeFunction = wrapToAFunction1(fnx);
         macro ($fnx : $typeFunction);
       }
       case 1:{

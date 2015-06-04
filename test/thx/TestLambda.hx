@@ -24,6 +24,8 @@ class TestLambda {
     Assert.equals(10, fn(_0+_1+_2+_3)(1,2,3,4));
     Assert.equals(15, fn(_0+_1+_2+_3+_4)(1,2,3,4,5));
 
+    fn(_+1) + fn(_+2);
+
     //Assert.equals(1, fn(_)(1));
     Assert.equals(3, fn(_+_1)(1,2));
     Assert.equals(6, fn(_+_1+_2)(1,2,3));
